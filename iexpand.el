@@ -118,8 +118,10 @@ Major-mode table is searched first, fundamental last."
   "A simple minor mode that leverages `hippie-expand'
 to call interactive commands."
   nil "iexp" nil
-  (when iexpand-minor-mode
-    (add-to-list 'hippie-expand-try-functions-list 'try-iexpand)))
+  (if iexpand-minor-mode
+      (add-to-list 'hippie-expand-try-functions-list 'try-iexpand)
+    (setq hippie-expand-try-functions-list
+          (delq 'try-iexpand hippie-expand-try-functions-list))))
 
 ;;;###autoload
 (defun turn-on-iexpand-minor-mode ()
