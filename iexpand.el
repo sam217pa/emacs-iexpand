@@ -211,14 +211,14 @@ Commands associated with current major-mode in iexpand:
 
 (defvar iexpand-mode-map (make-sparse-keymap))
 
-(defun define-iexpand-key (key)
+(defun iexpand--define-key (key)
   "Correctly bind KEY to `iexpand', erasing previous bindings
 made to it."
   ;; reset for erasing previous definition
   (setq iexpand-mode-map (make-sparse-keymap))
   (define-key iexpand-mode-map (kbd key) #'iexpand))
 
-(define-iexpand-key iexpand-default-key)
+(iexpand--define-key iexpand-default-key)
 
 ;;;###autoload
 (define-minor-mode iexpand-minor-mode

@@ -87,11 +87,6 @@ Call command associated with symbol at point.
 
 Describes the expansions associated with current ‘major-mode’.
 
-#### `(define-iexpand-key KEY)`
-
-Correctly bind KEY to ‘iexpand’, erasing previous bindings
-made to it.
-
 #### `(turn-on-iexpand-minor-mode)`
 
 Simple wrapper around ‘iexpand-minor-mode’
