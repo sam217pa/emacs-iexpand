@@ -46,8 +46,8 @@ One can also define multiple expansions in one run:
 (iexpand-define-table 'fundamental-mode
  "bb" #'switch-to-buffer
  "file" #'find-file
- "time?" (lambda () (interactive) (message (format-time-string "%FT%T")))
- "time!" (lambda () (interactive) (insert  (format-time-string "%FT%T"))))
+ "time" (lambda () (interactive) (message (format-time-string "%FT%T")))
+ "timestamp" (lambda () (interactive) (insert  (format-time-string "%FT%T"))))
 
 ```
 
