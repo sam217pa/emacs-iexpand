@@ -23,11 +23,10 @@
 ;;
 ;;; Commentary:
 ;;
-;; Add an expansion to hippie-expand that allows calling functions
-;; from a typed symbol. This is cool because one can just type
-;; a symbol, and call `hippie-expand`, which will trigger the command
-;; if there is one associated with the symbol at point; the typed
-;; symbol will be deleted, restoring buffer state.
+;; Calls interactive functions from a typed symbol. This is cool
+;; because one can just type a symbol, and call `iexpand`, which
+;; will trigger the command if there is one associated with the symbol
+;; at point; the typed symbol will be deleted, restoring buffer state.
 ;;
 ;; Users can define expansion tables in the spirit of `abbrev`
 ;; tables — that is, in a per-mode fashion, respecting the hierarchy
@@ -37,16 +36,15 @@
 ;;
 ;; ```emacs-lisp
 ;; (require 'iexpand)
-;; ;; add `try-iexpand' to the list of hippie-expand functions
 ;; (iexpand-global-mode t)
 ;; (iexpand-define 'emacs-lisp-mode "eb" #'eval-buffer)
 ;; (iexpand-define 'prog-mode "compile" #'compile)
 ;; ```
 ;;
 ;; Now in an emacs-lisp buffer, typing `eb` and calling
-;; `hippie-expand` (usually bound to `M-/`) will evaluate the buffer.
+;; `iexpand` (by default bound to `RET`) will evaluate the buffer.
 ;; In that same buffer, as `emacs-lisp-mode` inherits from
-;; `prog-mode`, typing `compile` and calling `hippie-expand` will
+;; `prog-mode`, typing `compile` and calling `iexpand` will
 ;; prompt for a compilation command (see `C-h C-f compile`).
 ;;
 ;; One can also define multiple expansions in one run:
@@ -82,8 +80,17 @@
   (require 'subr-x)
   (require 'cl-lib))
 
-(require 'hippie-exp)
 (require 'thingatpt)
+
+;; CUSTOM ------------------------------------------------------------
+
+(defcustom iexpand-default-key "RET"
+  "Default keybinding for calling `iexpand'"
+  :group 'iexpand
+  :type 'string)
+
+
+;; CORE --------------------------------------------------------------
 
 (defun iexpand--group (source n)
   "Divide SOURCE list in N groups and stack together the last
@@ -129,7 +136,7 @@ Example:
 (defun iexpand-define (mode key command)
   "Define an expansion for COMMAND associated with KEY for MODE.
 
-Calling `hippie-expand' when point is after KEY in major-mode
+Calling `iexpand' when point is after KEY in major-mode
 MODE triggers calling COMMAND interactively."
   (let ((iexpand-table (iexpand--make-table mode)))
     (puthash key command iexpand-table)))
@@ -151,16 +158,31 @@ Major-mode table is searched first, fundamental last."
 (defun iexpand--symbol ()
   "Call command associated with symbol at point."
   (when-let ((be (bounds-of-thing-at-point 'symbol)))
-    (he-init-string (car be) (cdr be))
-    (when-let ((cmd (iexpand--get-cmd he-search-string)))
+    (when-let ((cmd (iexpand--get-cmd (buffer-substring-no-properties (car be) (cdr be)))))
       (unwind-protect
-          (progn (he-substitute-string "") t)
+          (progn (delete-region (car be) (cdr be)) t)
         (call-interactively cmd)))))
 
 (defun try-iexpand (old)
   (unless old (iexpand--symbol)))
 
-;; Documentation -----------------------------------------------------
+(defvar-local iexpand--fallback-cmd nil
+  "Command to call when no expansion was found")
+
+(defun iexpand--get-expanding-key ()
+  (car (where-is-internal 'iexpand iexpand-mode-map)))
+
+(defun iexpand--set-fallback-behaviour ()
+  (setq-local iexpand--fallback-cmd
+              (lookup-key (current-global-map) (iexpand--get-expanding-key))))
+
+(defun iexpand (&optional arg)
+  "Call command associated with symbol at point."
+  (interactive "p")
+  (or (iexpand--symbol)
+      (call-interactively iexpand--fallback-cmd arg)))
+
+;; DOCUMENTATION -----------------------------------------------------
 
 (defun iexpand--get-derived-modes ()
   "Returns the parents of major mode up to fundamental mode."
@@ -185,21 +207,33 @@ Commands associated with current major-mode in iexpand:
                  (maphash (lambda (k v) (princ (format "%20s\t%s\n" k v))) h)))
      (iexpand--get-derived-modes))))
 
+;; KEYBINDINGS -------------------------------------------------------
+
+(defvar iexpand-mode-map (make-sparse-keymap))
+
+(defun define-iexpand-key (key)
+  "Correctly bind KEY to `iexpand', erasing previous bindings
+made to it."
+  ;; reset for erasing previous definition
+  (setq iexpand-mode-map (make-sparse-keymap))
+  (define-key iexpand-mode-map (kbd key) #'iexpand))
+
+(define-iexpand-key iexpand-default-key)
+
 ;;;###autoload
 (define-minor-mode iexpand-minor-mode
-  "A simple minor mode that leverages `hippie-expand'
-to call interactive commands."
-  nil "iexp" nil
-  (if iexpand-minor-mode
-      (add-to-list 'hippie-expand-try-functions-list 'try-iexpand)
-    (setq hippie-expand-try-functions-list
-          (delq 'try-iexpand hippie-expand-try-functions-list))))
+  "A simple minor mode that leverages typed text to call
+interactive commands."
+  nil "iexp"
+  :keymap iexpand-mode-map
+  (when iexpand-minor-mode (iexpand--set-fallback-behaviour)))
 
 ;;;###autoload
 (defun turn-on-iexpand-minor-mode ()
   "Simple wrapper around `iexpand-minor-mode'"
   (interactive)
-  (iexpand-minor-mode t))
+  (unless (provided-mode-derived-p major-mode '(help-mode minibuffer-inactive-mode calc-mode))
+    (iexpand-minor-mode t)))
 
 ;;;###autoload
 (define-globalized-minor-mode iexpand-global-mode iexpand-minor-mode

@@ -6,11 +6,10 @@
 ---
 [![License GPLv3](https://img.shields.io/badge/license-GPL_v3-green.svg)](http://www.gnu.org/licenses/gpl-3.0.html)
 
-Add an expansion to hippie-expand that allows calling functions
-from a typed symbol. This is cool because one can just type
-a symbol, and call `hippie-expand`, which will trigger the command
-if there is one associated with the symbol at point; the typed
-symbol will be deleted, restoring buffer state.
+Calls interactive functions from a typed symbol. This is cool
+because one can just type a symbol, and call `iexpand`, which
+will trigger the command if there is one associated with the symbol
+at point; the typed symbol will be deleted, restoring buffer state.
 
 Users can define expansion tables in the spirit of `abbrev`
 tables — that is, in a per-mode fashion, respecting the hierarchy
@@ -21,16 +20,15 @@ of modes.
 
 ```emacs-lisp
 (require 'iexpand)
-;; add `try-iexpand` to the list of hippie-expand functions
 (iexpand-global-mode t)
 (iexpand-define 'emacs-lisp-mode "eb" #'eval-buffer)
 (iexpand-define 'prog-mode "compile" #'compile)
 ```
 
 Now in an emacs-lisp buffer, typing `eb` and calling
-`hippie-expand` (usually bound to `M-/`) will evaluate the buffer.
+`iexpand` (by default bound to `RET`) will evaluate the buffer.
 In that same buffer, as `emacs-lisp-mode` inherits from
-`prog-mode`, typing `compile` and calling `hippie-expand` will
+`prog-mode`, typing `compile` and calling `iexpand` will
 prompt for a compilation command (see `C-h C-f compile`).
 
 One can also define multiple expansions in one run:
@@ -78,12 +76,21 @@ Example:
 
 Define an expansion for COMMAND associated with KEY for MODE.
 
-Calling ‘hippie-expand’ when point is after KEY in major-mode
+Calling ‘iexpand’ when point is after KEY in major-mode
 MODE triggers calling COMMAND interactively.
+
+#### `(iexpand &optional ARG)`
+
+Call command associated with symbol at point.
 
 #### `(iexpand-describe)`
 
 Describes the expansions associated with current ‘major-mode’.
+
+#### `(define-iexpand-key KEY)`
+
+Correctly bind KEY to ‘iexpand’, erasing previous bindings
+made to it.
 
 #### `(turn-on-iexpand-minor-mode)`
 
