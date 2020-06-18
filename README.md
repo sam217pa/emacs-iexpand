@@ -81,6 +81,10 @@ Define an expansion for COMMAND associated with KEY for MODE.
 Calling ‘hippie-expand’ when point is after KEY in major-mode
 MODE triggers calling COMMAND interactively.
 
+#### `(iexpand-describe)`
+
+Describes the expansions associated with current ‘major-mode’.
+
 #### `(turn-on-iexpand-minor-mode)`
 
 Simple wrapper around ‘iexpand-minor-mode’

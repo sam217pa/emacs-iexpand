@@ -160,6 +160,31 @@ Major-mode table is searched first, fundamental last."
 (defun try-iexpand (old)
   (unless old (iexpand--symbol)))
 
+;; Documentation -----------------------------------------------------
+
+(defun iexpand--get-derived-modes ()
+  "Returns the parents of major mode up to fundamental mode."
+  (cl-labels ((f (mode)
+                 (if-let ((parent-mode (get mode 'derived-mode-parent)))
+                     (cons mode (f parent-mode))
+                   (cons mode (cons 'fundamental-mode nil)))))
+    (f major-mode)))
+
+(defun iexpand-describe ()
+  "Describes the expansions associated with current `major-mode'."
+  (interactive)
+  (with-help-window (help-buffer)
+    (princ "[Iexpand Help]
+
+Commands associated with current major-mode in iexpand:
+
+")
+    (mapc
+     (lambda (mode) (when-let ((h (iexpand--get-table mode)))
+                 (princ (format "MODE: %s\n" (symbol-name mode)))
+                 (maphash (lambda (k v) (princ (format "%20s\t%s\n" k v))) h)))
+     (iexpand--get-derived-modes))))
+
 ;;;###autoload
 (define-minor-mode iexpand-minor-mode
   "A simple minor mode that leverages `hippie-expand'
