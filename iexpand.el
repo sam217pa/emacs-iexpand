@@ -1,13 +1,13 @@
 ;;; iexpand.el --- Expand commands at point ---                     -*- lexical-binding: t; -*-
-
+;;
 ;; Copyright (C) 2020  Samuel Barreto
 ;; License: GPLv3
-
+;;
 ;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
 ;; Maintainer: Samuel barreto <samuel.barreto8@gmail.com>
 ;; Keywords: expansion, convenience
 ;; Version: 0.1
-
+;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
@@ -20,14 +20,62 @@
 ;;
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+;;
 ;;; Commentary:
-
-;; Add an expansion to hippie-expand that allows calling functions from a typed symbol.
-
-;;; Do something
-
-
+;;
+;; Add an expansion to hippie-expand that allows calling functions
+;; from a typed symbol. This is cool because one can just type
+;; a symbol, and call `hippie-expand`, which will trigger the command
+;; if there is one associated with the symbol at point; the typed
+;; symbol will be deleted, restoring buffer state.
+;;
+;; Users can define expansion tables in the spirit of `abbrev`
+;; tables — that is, in a per-mode fashion, respecting the hierarchy
+;; of modes.
+;;
+;;; Usage:
+;;
+;; ```emacs-lisp
+;; (require 'iexpand)
+;; ;; add `try-iexpand' to the list of hippie-expand functions
+;; (iexpand-global-mode t)
+;; (iexpand-define 'emacs-lisp-mode "eb" #'eval-buffer)
+;; (iexpand-define 'prog-mode "compile" #'compile)
+;; ```
+;;
+;; Now in an emacs-lisp buffer, typing `eb` and calling
+;; `hippie-expand` (usually bound to `M-/`) will evaluate the buffer.
+;; In that same buffer, as `emacs-lisp-mode` inherits from
+;; `prog-mode`, typing `compile` and calling `hippie-expand` will
+;; prompt for a compilation command (see `C-h C-f compile`).
+;;
+;; One can also define multiple expansions in one run:
+;;
+;; ```emacs-lisp
+;; (iexpand-define-table 'text-mode
+;;  "xs" #'save-buffer
+;;  "ir" #'indent-region
+;;  "indent-region" #'indent-region
+;;  "indent" #'indent-region)
+;;
+;; ;; define global expansions by adding to the fundamental-mode table
+;; (iexpand-define-table 'fundamental-mode
+;;  "bb" #'switch-to-buffer
+;;  "file" #'find-file
+;;  "time?" (lambda () (interactive) (message (format-time-string "%FT%T")))
+;;  "time!" (lambda () (interactive) (insert  (format-time-string "%FT%T"))))
+;;
+;; ```
+;;
+;; See it in action:
+;;
+;; ![screencast](doc/screencast.gif)
+;;
+;; > (For those who care, theme is a combination of [modus
+;; operandi](https://gitlab.com/protesilaos/modus-themes)
+;; and [elegance.el](https://github.com/rougier/elegant-emacs); font
+;; is *Roboto mono*.)
+;;
 ;;; Code:
 
 (eval-when-compile
@@ -70,8 +118,7 @@ BODY consists of KEY-COMMAND pairs.
 Example:
 (iexpand-define-table 'emacs-lisp-mode
   \"xs\" #'save-buffer
-  \"hw\" (lambda (interactive) (message \"hello world\")))
-"
+  \"hw\" (lambda (interactive) (message \"hello world\")))"
   (declare (indent 1))
   `(progn
      (iexpand--make-table ,mode)
