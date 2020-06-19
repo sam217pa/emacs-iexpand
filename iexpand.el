@@ -6,7 +6,7 @@
 ;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
 ;; Maintainer: Samuel barreto <samuel.barreto8@gmail.com>
 ;; Keywords: expansion, convenience
-;; Version: 0.1
+;; Version: 0.1.1
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
