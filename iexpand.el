@@ -160,7 +160,10 @@ Major-mode table is searched first, fundamental last."
   (when-let ((be (bounds-of-thing-at-point 'symbol)))
     (when-let ((cmd (iexpand--get-cmd (buffer-substring-no-properties (car be) (cdr be)))))
       (unwind-protect
-          (progn (delete-region (car be) (cdr be)) t)
+          (progn
+            (delete-region (car be) (cdr be))
+            (undo-boundary)
+            t)
         (call-interactively cmd)))))
 
 (defun try-iexpand (old)
@@ -222,15 +225,15 @@ made to it."
   (setq iexpand-mode-map (make-sparse-keymap))
   (define-key iexpand-mode-map (kbd key) #'iexpand))
 
-(iexpand--define-key iexpand-default-key)
-
 ;;;###autoload
 (define-minor-mode iexpand-minor-mode
   "A simple minor mode that leverages typed text to call
 interactive commands."
   nil "iexp"
   :keymap iexpand-mode-map
-  (when iexpand-minor-mode (iexpand--set-fallback-behaviour)))
+  (when iexpand-minor-mode
+    (iexpand--set-fallback-behaviour)
+    (iexpand--define-key iexpand-default-key)))
 
 (defcustom iexpand-except-modes '(help-mode minibuffer-inactive-mode calc-mode dired-mode magit-mode)
   "Modes in which `iexpand' should have no effect."
