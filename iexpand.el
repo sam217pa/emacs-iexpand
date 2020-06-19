@@ -75,6 +75,17 @@
 ;; and [elegance.el](https://github.com/rougier/elegant-emacs); font
 ;; is *Roboto mono*.)
 ;;
+;;; Installation
+;;
+;; ```bash
+;; mkdir -p ~/.emacs.d/lib; git clone https://github.com/sam217pa/emacs-iexpand ~/.emacs.d/lib/iexpand
+;; ```
+;; then in your `init.el` file:
+;; ```emacs-lisp
+;; (add-to-list 'load-path (expand-file-name "lib/iexpand" user-emacs-directory))
+;; (require 'iexpand)
+;; ```
+;;
 ;;; Why should you care?
 ;;
 ;; As has been remarked to me on [reddit](https://www.reddit.com/r/emacs/comments/hbbqnc/new_package_iexpandel_calling_commands_by/fv8ojfe?utm_source=share&utm_medium=web2x),

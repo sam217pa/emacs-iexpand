@@ -59,6 +59,18 @@ operandi](https://gitlab.com/protesilaos/modus-themes)
 and [elegance.el](https://github.com/rougier/elegant-emacs); font
 is *Roboto mono*.)
 
+### Installation
+
+
+```bash
+mkdir -p ~/.emacs.d/lib; git clone https://github.com/sam217pa/emacs-iexpand ~/.emacs.d/lib/iexpand
+```
+then in your `init.el` file:
+```emacs-lisp
+(add-to-list 'load-path (expand-file-name "lib/iexpand" user-emacs-directory))
+(require 'iexpand)
+```
+
 ### Why should you care?
 
 
@@ -75,7 +87,7 @@ Another interesting aspect to me is that you can give plain text orders to emacs
 (iexpand-define 'prog-mode "stage" #'magit-stage-file)
 ```
 type `stage`, press return, the file is staged.
-For some reason this “workflow” suits me well, maybe it'll suits you too.
+For some reason this “workflow” suits me well, maybe it'll suit you too.
 
 ### Function Documentation
 
