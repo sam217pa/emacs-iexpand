@@ -203,9 +203,13 @@ Commands associated with current major-mode in iexpand:
 ")
     (mapc
      (lambda (mode) (when-let ((h (iexpand--get-table mode)))
-                 (princ (format "MODE: %s\n" (symbol-name mode)))
-                 (maphash (lambda (k v) (princ (format "%20s\t%s\n" k v))) h)))
+                 (princ
+                  (concat (format "\n%s\n" (symbol-name mode))
+                          (make-string (length (symbol-name mode)) ?-)
+                          "\n"))
+                 (maphash (lambda (k v) (princ (format "%10s\t%s\n" k v))) h)))
      (iexpand--get-derived-modes))))
+
 
 ;; KEYBINDINGS -------------------------------------------------------
 
@@ -228,11 +232,22 @@ interactive commands."
   :keymap iexpand-mode-map
   (when iexpand-minor-mode (iexpand--set-fallback-behaviour)))
 
+(defcustom iexpand-except-modes '(help-mode minibuffer-inactive-mode calc-mode dired-mode magit-mode)
+  "Modes in which `iexpand' should have no effect."
+  :type (list 'string)
+  :group 'iexpand)
+
+(defun iexpand--check-current-mode ()
+  (or (cl-loop for x in iexpand-except-modes
+               if (provided-mode-derived-p major-mode x)
+               collect x)
+      buffer-read-only))
+
 ;;;###autoload
 (defun turn-on-iexpand-minor-mode ()
   "Simple wrapper around `iexpand-minor-mode'"
   (interactive)
-  (unless (provided-mode-derived-p major-mode '(help-mode minibuffer-inactive-mode calc-mode))
+  (unless (iexpand--check-current-mode)
     (iexpand-minor-mode t)))
 
 ;;;###autoload
