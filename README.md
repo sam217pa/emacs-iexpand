@@ -20,6 +20,7 @@ of modes.
 
 ```emacs-lisp
 (require 'iexpand)
+(setq iexpand-default-key "RET") ; default is RET
 (iexpand-global-mode t)
 (iexpand-define 'emacs-lisp-mode "eb" #'eval-buffer)
 (iexpand-define 'prog-mode "compile" #'compile)
@@ -57,6 +58,24 @@ See it in action:
 operandi](https://gitlab.com/protesilaos/modus-themes)
 and [elegance.el](https://github.com/rougier/elegant-emacs); font
 is *Roboto mono*.)
+
+### Why should you care?
+
+
+As has been remarked to me on [reddit](https://www.reddit.com/r/emacs/comments/hbbqnc/new_package_iexpandel_calling_commands_by/fv8ojfe?utm_source=share&utm_medium=web2x),
+yasnippet or other packages implements something similar to what iexpand does.
+However, triggering arbitrary yet simple emacs-lisp commands from yasnippet requires you to 1) write a snippet with the propper (simple) syntax ([yasnippet documentation](https://joaotavora.github.io/yasnippet/snippet-development.html#orgcde188c)), 2) save it to an appropriate place, 3) have yasnippet properly load the snippet (which it does automatically normally).
+It does work, but I do think that it is not what yasnippet was primarily intended to do, which is to expand plain text, with some assistance from emacs-lisp when need be.
+
+Iexpand take it the other way around: it is primarily intended to evaluate emacs-lisp commands, which incidentally allows it to expand some simple text snippets.
+But I would keep writing snippets for anything more complex than what is displayed in the screencast (the `timestamp` snippet).
+
+Another interesting aspect to me is that you can give plain text orders to emacs, say `save`, press return: it saves the buffer.
+```emacs-lisp
+(iexpand-define 'prog-mode "stage" #'magit-stage-file)
+```
+type `stage`, press return, the file is staged.
+For some reason this “workflow” suits me well, maybe it'll suits you too.
 
 ### Function Documentation
 
